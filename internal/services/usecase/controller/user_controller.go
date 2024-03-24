@@ -9,6 +9,6 @@ type UserInteractor struct {
 	UserRepository repo.UserRepository
 }
 
-func (interactor *UserInteractor) Add(u models.User) {
-	interactor.UserRepository.Store(u)
+func (interactor *UserInteractor) Add(u models.User) error {
+	return interactor.UserRepository.Store(u)
 }

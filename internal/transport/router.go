@@ -4,8 +4,6 @@ import (
 	"vk_test/internal/database"
 	controllers "vk_test/internal/services"
 
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -19,10 +17,7 @@ func Init(e *echo.Echo) {
 
 	userController := controllers.NewUserController(database.NewSqlHandler())
 
-	e.POST("/users", func(c echo.Context) error {
-		userController.Create(c)
-		return c.String(http.StatusCreated, "created")
-	})
+	e.POST("/users", userController.Create)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

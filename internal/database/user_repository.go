@@ -9,6 +9,6 @@ type UserRepository struct {
 	interfaces.SqlHandler
 }
 
-func (db *UserRepository) Store(u models.User) {
-	db.Create(&u)
+func (db *UserRepository) Store(u models.User) error {
+	return db.Create(&u)
 }

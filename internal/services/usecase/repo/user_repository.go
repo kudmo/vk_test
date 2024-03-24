@@ -5,5 +5,5 @@ import (
 )
 
 type UserRepository interface {
-	Store(models.User)
+	Store(models.User) error
 }
