@@ -37,4 +37,9 @@ func dbinit() {
 	if err != nil {
 		fmt.Print("User already exists")
 	}
+
+	err = db.Migrator().CreateTable(models.Announcement{})
+	if err != nil {
+		fmt.Print("Announcement already exists")
+	}
 }

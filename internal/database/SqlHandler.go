@@ -42,6 +42,9 @@ func (handler *SqlHandler) SelectById(obj interface{}, id string) error {
 	return err
 }
 
+func (handler *SqlHandler) Offset(offset int) (tx *gorm.DB) {
+	return handler.db.Offset(offset)
+}
 func (handler *SqlHandler) Where(object interface{}, args ...interface{}) (tx *gorm.DB) {
 	return handler.db.Where(object, args)
 }

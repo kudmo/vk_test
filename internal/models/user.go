@@ -3,6 +3,7 @@ package models
 // User
 // Describes service user
 type User struct {
-	Login    string `json:"login" gorm:"primary_key" `
+	Id       int    `json:"-" gorm:"primary_key"`
+	Login    string `json:"login" gorm:"unique; not null" `
 	Password string `json:"-"`
 }

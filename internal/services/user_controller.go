@@ -1,29 +1,37 @@
 package services
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
+	"log"
 	"net/http"
+	"vk_test/internal/auth"
 	"vk_test/internal/database"
 	"vk_test/internal/database/interfaces"
 	"vk_test/internal/models"
-	"vk_test/internal/services/usecase/controller"
+	"vk_test/internal/services/repo"
 
 	"github.com/labstack/echo/v4"
 )
 
 type UserController struct {
-	Interactor controller.UserInteractor
+	UserRepository repo.UserRepository
 }
 
 func NewUserController(sqlHandler interfaces.SqlHandler) *UserController {
 	return &UserController{
-		Interactor: controller.UserInteractor{
-			UserRepository: &database.UserRepository{
-				SqlHandler: sqlHandler,
-			},
+		UserRepository: &database.UserRepository{
+			SqlHandler: sqlHandler,
 		},
 	}
+}
+
+func (interactor *UserController) checkAuth(login, password string) (int, error) {
+	user, err := interactor.UserRepository.SelectByLogin(login)
+
+	if err != nil || user.Login != login || user.Password != auth.HashPassword(password) {
+		return 0, echo.ErrUnauthorized
+	}
+
+	return user.Id, nil
 }
 
 func (controller *UserController) Create(c echo.Context) error {
@@ -39,13 +47,40 @@ func (controller *UserController) Create(c echo.Context) error {
 
 	login := data.Login
 	password := data.Password
-	sum := sha256.Sum256([]byte(password))
-	hashedPassword := hex.EncodeToString(sum[:])
+	hashedPassword := auth.HashPassword(password)
 
 	u := models.User{Login: login, Password: hashedPassword}
 
-	if controller.Interactor.Add(u) != nil {
+	if controller.UserRepository.Store(u) != nil {
 		return c.String(http.StatusBadRequest, "login already exist")
 	}
 	return c.JSON(http.StatusCreated, u)
+}
+
+func (controller *UserController) Login(c echo.Context) error {
+	type UserData struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	}
+	data := UserData{}
+
+	if err := c.Bind(&data); err != nil {
+		return c.String(http.StatusBadRequest, "bad data")
+	}
+
+	userId, err := controller.checkAuth(data.Login, data.Password)
+	if err != nil {
+		return c.String(http.StatusUnauthorized, "wrong login or password")
+	}
+
+	atoken, err := auth.CalculateToken(userId)
+
+	if err != nil {
+		log.Println(err.Error())
+		return c.String(http.StatusInternalServerError, "something goes wrong")
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"token": atoken,
+	})
 }
