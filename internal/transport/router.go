@@ -23,7 +23,9 @@ func Init(e *echo.Echo) {
 	announcementController := controllers.NewAnnouncementController(database.NewSqlHandler())
 
 	userGroup := e.Group("/users")
+	// User registration - endpoint
 	userGroup.POST("/registrate", userController.Create)
+	// User authorization - endpoint
 	userGroup.POST("/login", userController.Login)
 
 	announcementGroup := e.Group("/announcement")
@@ -36,8 +38,9 @@ func Init(e *echo.Echo) {
 		},
 		SigningKey: []byte(config.SecretKeyJWT),
 	}))
-
+	// Placing a new ad
 	announcementGroup.POST("/create", announcementController.Create)
+	// Displaying the ad feed
 	announcementGroup.GET("/all", announcementController.Get)
 
 	e.Logger.Fatal(e.Start(":1323"))

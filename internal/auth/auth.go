@@ -1,3 +1,4 @@
+// A package with functions for working with authorization via jwt
 package auth
 
 import (
@@ -13,18 +14,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Description of JWT fields
 type JWTClaims struct {
 	jwt.RegisteredClaims
 	UserId int `json:"user-id"`
 	Type   string
 }
 
-// // From context field "user" gets jwt and gets user id from it
-// func TokenGetUserId(c echo.Context) int {
-// 	aa := c.Get("user")
-// 	return aa.(*jwt.Token).Claims.(*JWTClaims).UserId
-// }
-
+// The function of getting the user ID from the transferred token and checking the token for correctness
 func TokenGetUserId(c echo.Context) (int, bool) {
 	headers := c.Request().Header["Authorization"]
 	if len(headers) == 0 {
@@ -48,7 +45,7 @@ func TokenGetUserId(c echo.Context) (int, bool) {
 
 }
 
-// Returns encoded token, token id, error.
+// Returns encoded token, error.
 //
 // The current duration of the token is 12 hours
 func CalculateToken(userId int) (string, error) {
@@ -68,32 +65,7 @@ func CalculateToken(userId int) (string, error) {
 	return t, err
 }
 
-// Get JWT from json
-//
-//	json : {
-//		"token" : JWT
-//	}
-//
-// if the JWT has expired it is not an error
-func GetTokenFromContext(c echo.Context) (*JWTClaims, error) {
-	type tokenReqBody struct {
-		AccessToken string `json:"token"`
-	}
-	tokenReq := tokenReqBody{}
-	c.Bind(&tokenReq)
-
-	at, err := jwt.ParseWithClaims(tokenReq.AccessToken, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.SecretKeyJWT), nil
-	})
-
-	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
-		return nil, err
-	}
-	atoken := at.Claims.(*JWTClaims)
-
-	return atoken, nil
-}
-
+// Password hashing function
 func HashPassword(password string) string {
 	sum := sha256.Sum256([]byte(password))
 	return hex.EncodeToString(sum[:])

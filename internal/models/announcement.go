@@ -2,6 +2,9 @@ package models
 
 import "time"
 
+// Announcement
+//
+// Describes an ad on the marketplace
 type Announcement struct {
 	Id        int       `json:"-" gorm:"primary_key"`
 	ClientId  int       `json:"-" gorm:"not null"`

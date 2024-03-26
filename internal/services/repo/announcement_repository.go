@@ -5,6 +5,7 @@ import (
 	"vk_test/internal/models"
 )
 
+// Interface for describing the ad repository
 type AnnouncementRepository interface {
 	Store(models.Announcement) error
 	Select() []models.Announcement
