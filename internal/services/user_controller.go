@@ -3,6 +3,7 @@ package services
 import (
 	"log"
 	"net/http"
+	"regexp"
 	"vk_test/internal/auth"
 	"vk_test/internal/database"
 	"vk_test/internal/database/interfaces"
@@ -40,13 +41,20 @@ func (controller *UserController) Create(c echo.Context) error {
 		Password string `json:"password"`
 	}
 	data := UserData{}
-
+	password_regex, _ := regexp.Compile("^[a-zA-Z0-9_!@#$%^&*]{7,}$")
+	login_regex, _ := regexp.Compile("^[a-zA-Z0-9_]{6,}$")
 	if err := c.Bind(&data); err != nil {
 		return c.String(http.StatusBadRequest, "bad data")
 	}
 
 	login := data.Login
+	if !login_regex.MatchString(login) {
+		return c.String(http.StatusBadRequest, "Incorrect login")
+	}
 	password := data.Password
+	if !password_regex.MatchString(password) {
+		return c.String(http.StatusBadRequest, "Incorrect password")
+	}
 	hashedPassword := auth.HashPassword(password)
 
 	u := models.User{Login: login, Password: hashedPassword}

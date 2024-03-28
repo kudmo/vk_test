@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -85,7 +84,17 @@ func (controller *AnnouncementController) Create(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad data")
 	}
 	userId, _ := auth.TokenGetUserId(c)
-	fmt.Println(userId)
+	if len(data.Text) > 256 || len(data.Text) == 0 {
+		return c.String(http.StatusBadRequest, "Incorrect data: wrong size of text")
+
+	}
+	if len(data.Title) > 50 || len(data.Title) == 0 {
+		return c.String(http.StatusBadRequest, "Incorrect data: wrong size of title")
+
+	}
+	if len(data.ImageRef) == 0 {
+		return c.String(http.StatusBadRequest, "Incorrect data: missing image ref")
+	}
 	data.ClientId = userId
 	err := controller.AnnouncementRepository.Store(data)
 	if err != nil {
